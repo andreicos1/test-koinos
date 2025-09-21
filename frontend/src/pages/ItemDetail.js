@@ -1,25 +1,36 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 function ItemDetail() {
   const { id } = useParams();
   const [item, setItem] = useState(null);
-  const navigate = useNavigate();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('/api/items/' + id)
-      .then(res => res.ok ? res.json() : Promise.reject(res))
-      .then(setItem)
-      .catch(() => navigate('/'));
-  }, [id, navigate]);
+    fetch(`http://localhost:3001/api/items/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Item not found");
+        return res.json();
+      })
+      .then((data) => setItem(data))
+      .catch((err) => {
+        console.error("Failed to fetch item:", err);
+        setError("Item not found");
+      });
+  }, [id]);
 
+  if (error) return <p>{error}</p>;
   if (!item) return <p>Loading...</p>;
 
   return (
-    <div style={{padding: 16}}>
+    <div style={{ padding: 16 }}>
       <h2>{item.name}</h2>
-      <p><strong>Category:</strong> {item.category}</p>
-      <p><strong>Price:</strong> ${item.price}</p>
+      <p>
+        <strong>Category:</strong> {item.category}
+      </p>
+      <p>
+        <strong>Price:</strong> ${item.price}
+      </p>
     </div>
   );
 }
